@@ -1,0 +1,11 @@
+[package]
+name = "sweeper"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+anyhow = "1"
+walkdir = "2"
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
+trash = "3"
