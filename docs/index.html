@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Sweeper CLI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            line-height: 1.6;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 3px 6px;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Sweeper CLI</h1>
+
+<p>
+Sweeper is a lightweight command-line tool to organize files,
+archive stale projects, and safely delete inactive folders.
+</p>
+
+<h2>✨ Features</h2>
+<ul>
+<li>📂 Organize messy folders by file type</li>
+<li>🗂 Archive inactive projects into monthly buckets</li>
+<li>🗑 Move stale folders safely to system bin</li>
+<li>🔒 Safe by default (dry-run unless confirmed)</li>
+</ul>
+
+<h2>🚀 Example Usage</h2>
+
+<pre>
+sweeper organize ~/Downloads --dry-run
+sweeper scan ~/Projects --older-than 30
+sweeper archive ~/Projects --dest ~/Projects/Archive --older-than 30 --yes
+sweeper delete ~/Projects --older-than 90 --yes
+</pre>
+
+<h2>⬇️ Download</h2>
+
+<p>
+Download the latest binaries from the
+<a href="https://github.com/BelieveKaren/sweeper/releases">
+GitHub Releases page
+</a>.
+</p>
+
+<h2>💰 Pricing</h2>
+
+<p>
+Sweeper is free for personal use.
+A Pro version could include configurable rules,
+scheduled cleanup, and JSON reports.
+</p>
+
+</body>
+</html>

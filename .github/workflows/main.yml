@@ -58,5 +58,5 @@ jobs:
           files: |
             *.tar.gz
             *.zip
-        env:
+        env: 
           GITHUB_TOKEN: ${{ secrets.SWEEPER }}
