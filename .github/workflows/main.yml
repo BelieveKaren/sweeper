@@ -1,22 +1,32 @@
-
 name: Release Statically Linked Rust Binary
 
 on:
   push:
     tags:
-      - 'v*'  # Trigger on tags lke 'v1.0.0'
+      - "v*"
 
 permissions:
-  contents: write  # Required for creating releases and uploading assets
+  contents: write
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    name: Build ${{ matrix.target }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+
     strategy:
+      fail-fast: false
       matrix:
-        target:
-          - x86_64-unknown-linux-musl       # Linux (musl)
-          - aarch64-unknown-linux-musl      # ARM Linux (musl)
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-musl
+          - os: macos-latest
+            target: x86_64-apple-darwin
+          - os: macos-latest
+            target: aarch64-apple-darwin
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
 
     env:
       BINARY_NAME: sweeper
@@ -28,29 +38,42 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Install Cross
-        run: cargo install cross
-
-      - name: Install Target for Cross Compilation
+      - name: Add Rust target
         run: rustup target add ${{ matrix.target }}
 
-      - name: Build with Cross
+      # Install cross only on Linux (needed for musl/aarch64)
+      - name: Install Cross (Linux only)
+        if: runner.os == 'Linux'
+        run: cargo install cross --locked
+
+      # Build: cross on Linux, cargo elsewhere
+      - name: Build (Linux with cross)
+        if: runner.os == 'Linux'
         run: cross build --target ${{ matrix.target }} --release --verbose
 
-      - name: Create Release Archive
+      - name: Build (macOS/Windows with cargo)
+        if: runner.os != 'Linux'
+        run: cargo build --target ${{ matrix.target }} --release --verbose
+
+      # Package artifacts (force bash so the if/elif works on Windows too)
+      - name: Package
+        shell: bash
         run: |
-          mkdir -p release
+          set -euo pipefail
+          mkdir -p dist
 
           if [[ "${{ matrix.target }}" == *"windows"* ]]; then
-            cp target/${{ matrix.target }}/release/$BINARY_NAME.exe release/
-            zip -r ${{ matrix.target }}.zip release
-          elif [[ "${{ matrix.target }}" == *"darwin"* ]]; then
-            cp target/${{ matrix.target }}/release/$BINARY_NAME release/
-            tar -czvf ${{ matrix.target }}.tar.gz -C release $BINARY_NAME
+            BIN_PATH="target/${{ matrix.target }}/release/${BINARY_NAME}.exe"
+            cp "$BIN_PATH" "dist/${BINARY_NAME}.exe"
+            (cd dist && zip -r "../${{ matrix.target }}.zip" "${BINARY_NAME}.exe")
           else
-            cp target/${{ matrix.target }}/release/$BINARY_NAME release/
-            tar -czvf ${{ matrix.target }}.tar.gz -C release $BINARY_NAME
+            BIN_PATH="target/${{ matrix.target }}/release/${BINARY_NAME}"
+            cp "$BIN_PATH" "dist/${BINARY_NAME}"
+            tar -czvf "${{ matrix.target }}.tar.gz" -C dist "${BINARY_NAME}"
           fi
+
+          ls -la
+          ls -la dist
 
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v2
@@ -58,5 +81,5 @@ jobs:
           files: |
             *.tar.gz
             *.zip
-        env: 
+        env:
           GITHUB_TOKEN: ${{ secrets.SWEEPER }}
