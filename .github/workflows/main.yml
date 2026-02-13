@@ -3,10 +3,11 @@ name: Release Statically Linked Rust Binary
 
 on:
   push:
-    branches:
-      - main
     tags:
-      - 'v*'  # Trigger on tags like 'v1.0.0'
+      - 'v*'  # Trigger on tags lke 'v1.0.0'
+
+permissions:
+  contents: write  # Required for creating releases and uploading assets
 
 jobs:
   build:
